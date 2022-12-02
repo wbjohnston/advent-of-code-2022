@@ -1,10 +1,25 @@
 use std::str::FromStr;
 mod input;
 
+#[derive(Debug, Clone, Copy)]
 enum GameResult {
     Loss = 0,
     Draw = 3,
     Win = 6,
+}
+
+impl FromStr for GameResult {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use GameResult::*;
+        match s {
+            "X" => Ok(Loss),
+            "Y" => Ok(Draw),
+            "Z" => Ok(Win),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 impl From<GameResult> for u64 {
@@ -18,10 +33,31 @@ impl From<GameResult> for u64 {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 enum Shape {
     Rock = 1,
     Paper = 2,
     Scissors = 3,
+}
+
+impl Shape {
+    pub fn loses_to(self) -> Shape {
+        use Shape::*;
+        match self {
+            Rock => Paper,
+            Paper => Scissors,
+            Scissors => Rock,
+        }
+    }
+
+    pub fn wins_to(self) -> Shape {
+        use Shape::*;
+        match self {
+            Rock => Scissors,
+            Paper => Rock,
+            Scissors => Paper,
+        }
+    }
 }
 
 impl From<Shape> for u64 {
@@ -41,33 +77,43 @@ impl FromStr for Shape {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "A" | "X" => Ok(Shape::Rock),
-            "B" | "Y" => Ok(Shape::Paper),
-            "C" | "Z" => Ok(Shape::Scissors),
+            "A" => Ok(Shape::Rock),
+            "B" => Ok(Shape::Paper),
+            "C" => Ok(Shape::Scissors),
             c => panic!("{} not implementated", c),
         }
     }
 }
 
 struct Game {
-    pub you: Shape,
     pub them: Shape,
+    pub result: GameResult,
 }
 
 impl Game {
-    pub fn score(&self) -> GameResult {
+    pub fn shape_needed(&self) -> Shape {
         use GameResult::*;
         use Shape::*;
-        match (&self.you, &self.them) {
-            (Rock, Scissors) => Win,
-            (Rock, Paper) => Loss,
-            (Paper, Rock) => Win,
-            (Paper, Scissors) => Loss,
-            (Scissors, Paper) => Win,
-            (Scissors, Rock) => Loss,
-            _ => Draw,
+        match self.result {
+            Win => self.them.loses_to(),
+            Draw => self.them,
+            Loss => self.them.wins_to(),
         }
     }
+
+    // pub fn score(&self) -> GameResult {
+    //     use GameResult::*;
+    //     use Shape::*;
+    //     match (&self.you, &self.them) {
+    //         (Rock, Scissors) => Win,
+    //         (Rock, Paper) => Loss,
+    //         (Paper, Rock) => Win,
+    //         (Paper, Scissors) => Loss,
+    //         (Scissors, Paper) => Win,
+    //         (Scissors, Rock) => Loss,
+    //         _ => Draw,
+    //     }
+    // }
 }
 
 fn main() {
@@ -85,18 +131,20 @@ fn main() {
     // };
 
     let games = input.split("\n").map(|l| {
-        let mut shapes = l.split(" ").map(|x| Shape::from_str(x).unwrap());
+        let mut shapes = l.split(" ");
 
         Game {
-            them: shapes.next().unwrap(),
-            you: shapes.next().unwrap(),
+            them: shapes.next().map(|x| Shape::from_str(x).unwrap()).unwrap(),
+            result: shapes
+                .next()
+                .map(|x| GameResult::from_str(x).unwrap())
+                .unwrap(),
         }
     });
 
     let scores: Vec<u64> = games
-        .map(|x| u64::from(x.score()) + u64::from(x.you))
+        .map(|x| u64::from(x.result) + u64::from(x.shape_needed()))
         .collect();
-    println!("{:?}", scores);
     let total: u64 = scores.iter().sum();
 
     println!("{:?}", total);
