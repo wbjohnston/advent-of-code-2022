@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::SystemTime};
 mod input;
 
 #[derive(Debug, Clone, Copy)]
@@ -117,6 +117,7 @@ impl Game {
 }
 
 fn main() {
+    let start = SystemTime::now();
     //     let input = "A Y
     // B X
     // C Z";
@@ -147,5 +148,8 @@ fn main() {
         .collect();
     let total: u64 = scores.iter().sum();
 
-    println!("{:?}", total);
+    let end = SystemTime::now();
+    let duration = end.duration_since(start).unwrap().as_micros();
+
+    println!("{:?} in {} micro seconds", total, duration);
 }
