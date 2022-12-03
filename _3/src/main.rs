@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::{HashMap, HashSet};
 
 mod input;
@@ -7,24 +8,27 @@ fn main() {
     let lines = input.split("\n");
     let priorities = priority_map();
     let x: u64 = lines
-        .map(|l| {
-            let len = l.len();
-            let midpoint = l.len() / 2;
-            let first_compartment = l.chars().take(midpoint).collect();
-            let second_compartment = l.chars().skip(midpoint).collect();
-            Rucksack {
-                compartments: (first_compartment, second_compartment),
-            }
+        .map(|l| HashSet::from_iter(l.chars()))
+        .chunks(3)
+        .into_iter()
+        .map(|mut c| {
+            let (first, second, third) = c.next_tuple().unwrap();
+
+            let first_inter: HashSet<char> = first
+                .clone()
+                .intersection(&second)
+                .into_iter()
+                .map(|x| *x)
+                .collect();
+            let second_inter: Vec<_> = first_inter.intersection(&third).collect();
+
+            second_inter[0].clone()
         })
-        .map(|x| x.get_common_item())
-        .map(|x| priorities.get(&x).unwrap())
-        .sum::<u64>();
+        .map(|i| priorities.get(&i).unwrap())
+        .sum();
 
-    println!("{}", x);
-
-    // println!("{:?}", priorities);
-
-    // println!("{:?}", rucksacks);
+    println!("here");
+    println!("{:?}", x);
 }
 
 fn priority_map() -> HashMap<char, u64> {
