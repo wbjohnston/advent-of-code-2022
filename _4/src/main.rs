@@ -44,6 +44,24 @@ fn sort(a: Range, b: Range) -> (Range, Range) {
     }
 }
 
+fn overlaps(a: Range, b: Range) -> bool {
+    let (lower, upper) = sort(a, b);
+
+    /*
+    3 cases
+    |-----|
+        |-----------|
+
+        |-----|
+    |----------|
+
+            |-----|
+    |-----------|
+    */
+
+    lower.0 <= upper.0 && lower.1 >= upper.0
+}
+
 fn fully_contains(a: Range, b: Range) -> bool {
     let (lower, upper) = sort(a, b);
 
@@ -56,7 +74,7 @@ fn main() {
     let c = input::INPUT
         .split("\n")
         .map(parse_line)
-        .filter(|&(a, b)| fully_contains(a, b))
+        .filter(|&(a, b)| overlaps(a, b))
         .count();
 
     println!("{:?}", c);
