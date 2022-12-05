@@ -26,8 +26,6 @@ fn main() {
         })
         .map(|i| priorities.get(&i).unwrap())
         .sum();
-
-    println!("here");
     println!("{:?}", x);
 }
 
