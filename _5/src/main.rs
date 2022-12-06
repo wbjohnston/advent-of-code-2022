@@ -35,11 +35,10 @@ fn main() {
         .split("\n")
         .map(|l| Instruction::from_str(l).unwrap())
         .collect();
+    let mut move_buffer = vec![];
 
     for i in instructions {
         let Instruction { amount, from, to } = i;
-
-        let mut move_buffer = vec![];
 
         for _ in 0..amount {
             let x = input[from - 1].pop().unwrap();
@@ -56,6 +55,8 @@ fn main() {
     for col in input.iter() {
         print!("{}", col.last().unwrap());
     }
+
+    println!("");
 
     // dbg!(input);
 }
