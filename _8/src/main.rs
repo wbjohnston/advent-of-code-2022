@@ -25,95 +25,77 @@ fn main() {
         .map(|l| l.chars().filter_map(|c| c.to_digit(10)).collect())
         .collect();
 
-    let mut visibility_map: Vec<Vec<_>> = input
-        .iter()
-        .map(|row| row.iter().map(|_| false).collect())
-        .collect();
+    let len = input.len();
+    let mut visibility_scores: Vec<Vec<_>> = vec![vec![0; len]; len];
 
-    let len = visibility_map.len();
+    for i in 1..len - 1 {
+        for j in 1..len - 1 {
+            let height = input[i][j];
 
-    for i in 0..len {
-        // top row
-        visibility_map[0][i] = true;
+            let current_score = &mut visibility_scores[i][j];
+            // right
+            let mut right_score = 0;
+            for j in (j + 1)..len {
+                let curr = input[i][j];
 
-        // bottom row
-        visibility_map[len - 1][i] = true;
+                right_score += 1;
 
-        // left column
-        visibility_map[i][0] = true;
+                if curr >= height {
+                    break;
+                }
+            }
 
-        // right column
-        visibility_map[i][len - 1] = true;
+            // left
+            let mut left_score = 0;
+            for j in (0..j).rev() {
+                let curr = input[i][j];
+                left_score += 1;
+
+                if curr >= height {
+                    break;
+                }
+            }
+
+            // down
+            let mut down_score = 0;
+            for i in (i + 1)..len {
+                let curr = input[i][j];
+
+                down_score += 1;
+
+                if curr >= height {
+                    break;
+                }
+            }
+
+            // up
+            let mut up_score = 0;
+            for i in (0..i).rev() {
+                let curr = input[i][j];
+
+                up_score += 1;
+
+                if curr >= height {
+                    break;
+                }
+            }
+
+            let score = up_score * down_score * right_score * left_score;
+            println!(
+                "({}, {}) -> U {} D {} L {} R {} {}",
+                i, j, up_score, down_score, right_score, left_score, score
+            );
+
+            *current_score = up_score * down_score * right_score * left_score;
+        }
     }
 
-    for i in 0..input.len() {
-        // left to right
-        {
-            let mut min_height = 0;
-            for j in 0..len {
-                let current = input[i][j];
-                visibility_map[i][j] = current > min_height || visibility_map[i][j];
-                min_height = min_height.max(current);
-            }
-        }
-        // right to left
-        {
-            let mut min_height = 0;
-            for j in (0..len).rev() {
-                let current = input[i][j];
-                visibility_map[i][j] = current > min_height || visibility_map[i][j];
-                min_height = min_height.max(current);
-            }
-        }
-
-        // top to bottom
-        {
-            let mut min_height = 0;
-            for j in 0..len {
-                let current = input[j][i];
-                visibility_map[j][i] = current > min_height || visibility_map[j][i];
-                min_height = min_height.max(current);
-                println!("{} {}", i, j);
-                // for row in visibility_map.iter() {
-                //     for &t in row {
-                //         print!("{}", if t { "T" } else { "." });
-                //     }
-                //     println!("");
-                // }
-                // println!("-----");
-            }
-        }
-
-        // bottom to top
-        {
-            let mut min_height = 0;
-            for j in (0..len).rev() {
-                let current = input[j][i];
-                visibility_map[j][i] = current > min_height || visibility_map[j][i];
-                min_height = min_height.max(current);
-            }
-        }
-
-        // for row in visibility_map.iter() {
-        //     for &t in row {
-        //         print!("{}", if t { "T" } else { "." });
-        //     }
-        //     println!("");
-        // }
-        // println!("=====");
-    }
-
-    let visible: usize = visibility_map
-        .iter()
-        .map(|r| r.iter().filter(|&&x| x).count())
-        .sum();
-
-    for row in visibility_map.iter() {
-        for &t in row {
-            print!("{}", if t { "T" } else { "." });
-        }
-        println!("");
-    }
-
-    println!("{}", visible);
+    println!(
+        "{}",
+        visibility_scores
+            .into_iter()
+            .map(|x| x.into_iter().max().unwrap())
+            .max()
+            .unwrap()
+    );
 }
